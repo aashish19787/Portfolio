@@ -84,6 +84,10 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
   const stepTimes = [0, 900, 1750, 2600];
   const totalDuration = reduceMotion ? 300 : 3600;
 
+    let seenIntro = false;
+  try { seenIntro = sessionStorage.getItem('introSeen') === '1'; } catch(e){}
+  const skipIntro = reduceMotion || seenIntro;
+
   function showStep(i){
     words.forEach(w=>{
       const step = parseInt(w.dataset.step);
@@ -102,9 +106,10 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
     setTimeout(()=>{ introEl.remove(); }, 1100);
   }
 
-  if(reduceMotion){
+    if(skipIntro){
     document.body.style.overflow='';
     endIntro();
+        try { sessionStorage.setItem('introSeen','1'); } catch(e){}
   } else {
     document.body.style.overflow='hidden';
     stepTimes.forEach((t,i)=> setTimeout(()=>showStep(i), t));
@@ -184,10 +189,12 @@ const depthSections = [
   {id:'home', m:0},
   {id:'about', m:12},
   {id:'skills', m:28},
+  {id:'projects', m:36},
   {id:'education', m:45},
   {id:'certifications', m:60},
   {id:'contact', m:80},
 ];
+
 function updateGauge(){
   const scrollTop = window.scrollY;
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -259,3 +266,10 @@ const io = new IntersectionObserver((entries)=>{
   });
 },{threshold:0.15});
 revealEls.forEach(el=>io.observe(el));
+
+/* ============ BACK TO TOP ============ */
+const backTop = document.getElementById('back-top');
+if(backTop){
+  window.addEventListener('scroll', ()=> backTop.classList.toggle('show', window.scrollY > 600));
+  backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior: reduceMotion ? 'auto' : 'smooth'}));
+}
